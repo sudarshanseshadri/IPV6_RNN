@@ -1,0 +1,3 @@
+execute the commands:
+python generateIPV6addr.py
+python predictIPV6addrCharacterRNN.py
