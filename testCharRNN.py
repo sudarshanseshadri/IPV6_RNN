@@ -13,12 +13,12 @@ chars = list(set(text))
 
 # set a fixed vector size
 # so we look at specific windows of characters
-max_len = 3*33 
+max_len = 2*33 
 
 model = Sequential()
-model.add(LSTM(512, return_sequences=True, input_shape=(max_len, len(chars))))
+model.add(LSTM(128, return_sequences=True, input_shape=(max_len, len(chars))))
 model.add(Dropout(0.2))
-model.add(LSTM(512, return_sequences=False))
+model.add(LSTM(128, return_sequences=False))
 model.add(Dropout(0.2))
 model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
@@ -71,15 +71,17 @@ def generate(seed):
         sentence = sentence[1:] + next_char
     return generated
 
-epochs = 20
-seed = "20010db885a3000000008a2e03700000;20010db885a3000000008a2e03700001;20010db885a3000000008a2e03700002;"
+epochs = 10
+seed = "20010db885a3000000008a2e03700000;20010db885a3000000008a2e03700001;"
 for i in range(epochs):
-    print 'epoch', i
+    print 'epoch', i*5
 
     # set nb_epoch to 1 since we're iterating manually
-    model.fit(X, y, batch_size=128, nb_epoch=1)
+    model.fit(X, y, batch_size=32, nb_epoch=5, shuffle=False)
 
     # preview
-    print 'seed: ', seed
-    print 'generated: ', generate(seed)
+    with open('trainingResults.txt', 'a') as f:
+	f.write('epoch: {}\n'.format(i))
+	f.write('seed: {}\n'.format(seed))
+	f.write('generated: {}\n'.format(generate(seed)))
 
