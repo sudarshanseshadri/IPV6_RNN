@@ -1,3 +1,33 @@
-execute the commands:
-python generateIPV6addr.py
-python predictIPV6addrCharacterRNN.py
+createPrefixDict.py - given a csv file with lines formatted as:
+<prefix>,<full address>
+saves a dictionary (using pickle) with prefixes as keys and a list of corresponding addresses as the value
+usage: python createPrefixDict.py <input csv file name>
+
+generateIPV6addr.py - generates full IPV6 addresses according to a two possible patterns: increment address by one or incremenet by one for the first half then by two for the second half.
+parameters: 
+outputFile - where to store the generated addresses 
+dropProb - probability that an address will be dropped, thus simulating holes in real input
+numAddr - the maximum address to generate
+numPatt - the code of the pattern to use
+usage: python generateIPV6addr.py <str: outputFile> <float: dropProb> <int: numAddr> <int: numPatt>
+ex: python generateIPV6addr.py mySaveFile.txt 0.1 1024 1
+
+generateShortAddr.py - same as generateIPV6addr.py, but with short addresses (no prefix).
+parameters: 
+outputFile - where to store the generated addresses 
+dropProb - probability that an address will be dropped, thus simulating holes in real input
+numAddr - the maximum address to generate
+numPatt - the code of the pattern to use
+addrLen - desired length of the address
+startPrefix - prefx, if any, that should be appended to the front of each adddress
+usage: python generateIPV6addr.py <str: outputFile> <float: dropProb> <int: numAddr> <int: numPatt> <int: addrLen> <str: startPrefix>
+ex: python generateIPV6addr.py mySaveFile.txt 0.1 1024 1 4 0abe
+
+testCharRNN.py - takes in an input file of addresses and outputs predictions made from those addresses. Uses a Recurrent Neural Net. See code for the topology, and see code/comments for details of implementation
+
+verifyCharRNN.py - given the output file from testCharRNN.py, and checks it against a specified pattern. See code for available functions.
+parameters:
+inputFile - file to take addresses from. Assumes each address is separated by a delimiter
+functionName - specifies the function to use for verification
+delimeter - delimiter between addresses
+usage: python verifyCharRNN.py <str: inputFile> <str: functionName> <str: delimeter>

@@ -1,11 +1,15 @@
+import sys
 import random
 import numpy as np
 from keras.models import Sequential
 from keras.layers.recurrent import LSTM
 from keras.layers.core import Dense, Activation, Dropout
 
+inputFile = sys.argv[1]
+outputFile = sys.argv[2]
+
 # load up our text
-text = open('IPV6Addresses.txt', 'r').read()
+text = open(inputFile, 'r').read()
 
 # extract all (unique) characters
 # these are our "categories" or "labels"
@@ -13,7 +17,8 @@ chars = list(set(text))
 
 # set a fixed vector size
 # so we look at specific windows of characters
-max_len = 2*33 
+addr_len = 5 
+max_len = 2*addr_len 
 
 model = Sequential()
 model.add(LSTM(128, return_sequences=True, input_shape=(max_len, len(chars))))
@@ -49,12 +54,14 @@ def generate(seed):
         raise Exception('Seed text must be at least {} chars long'.format(max_len))
 
     # if no seed text is specified, randomly select a chunk of text
-
     sentence = seed
     generated = '' 
-
+    savedProbs = []
+    incorrectMsg = ''
     while len(generated) < 10*max_len: 
-        # generate the input tensor
+        
+
+	# generate the input tensor
         # from the last max_len characters generated so far
         x = np.zeros((1, max_len, len(chars)))
         for t, char in enumerate(sentence):
@@ -62,26 +69,30 @@ def generate(seed):
 
         # this produces a probability distribution over characters
         probs = model.predict(x, verbose=0)[0]
-
+	savedProbs.append(probs)
         # sample the character to use based on the predicted probabilities
         next_idx = np.argmax(probs)
         next_char = labels_char[next_idx]
 
         generated += next_char
         sentence = sentence[1:] + next_char
-    return generated
+    return generated + '\n' + incorrectMsg
 
 epochs = 10
-seed = "20010db885a3000000008a2e03700000;20010db885a3000000008a2e03700001;"
 for i in range(epochs):
-    print 'epoch', i*5
-
+    epoch_num = 10
     # set nb_epoch to 1 since we're iterating manually
-    model.fit(X, y, batch_size=32, nb_epoch=5, shuffle=False)
+    model.fit(X, y, batch_size=32, nb_epoch=epoch_num, shuffle=False)
 
+    seed = str(inputs[int(random.random() * len(inputs) / max_len) * max_len])
     # preview
-    with open('trainingResults.txt', 'a') as f:
-	f.write('epoch: {}\n'.format(i))
+    with open(outputFile, 'a') as f:
+	f.write('epoch: {}\n'.format(i*epoch_num))
 	f.write('seed: {}\n'.format(seed))
 	f.write('generated: {}\n'.format(generate(seed)))
 
+for _ in range(20):
+    seed = str(inputs[int(random.random() * len(inputs) / max_len) * max_len])
+    with open(outputFile, 'a') as f:
+	f.write('seed: {}\n'.format(seed))
+	f.write('generated: {}\n'.format(generate(seed)))
